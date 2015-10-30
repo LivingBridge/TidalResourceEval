@@ -1,10 +1,10 @@
 clear all; close all; clc
-A=1;                %Turbine Area[m^2](1 for power density)
+A=4.5;              %Turbine Area[m^2](1 for power density)
 S=29.8;             %Average Salinity[PPT] over a year(2004) at Great Bay Coastal Marine Lab (greatbaydata.org)
 T=8.749;            %Average Temperature[C] over a year(2004) at Great Bay Coastal Marine Lab (greatbaydata.org)
 sample_period=15;   %minutes(check this)
 cut_in=0.7;         %[m/s]
-Cp=0.27;            %Efficiency of turbine
+Cp=0.35;            %Efficiency of turbine
 bin_space=0.3;      %[m]
 
 Data=load('ADCP.mat');
@@ -105,17 +105,17 @@ end
 % -------------------------------------------------------------------------
 
 
-for i=1:c(2)
-    figure(i)
-    plot(Time_Increment_Days,Speed{i})
-    datetick('x','mmm-dd','keepticks')
-    NumTicks = 300;
-    xlabel('Time[]')
-    ylabel('Speed[m/s]')
-    title(strcat('Current Speeds at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
-    pause
-    close all
-end
+% % for i=1:c(2)
+% %     figure(i)
+% %     plot(Time_Increment_Days,Speed{i})
+% %     datetick('x','mmm-dd','keepticks')
+% %     NumTicks = 300;
+% %     xlabel('Time[]')
+% %     ylabel('Speed[m/s]')
+% %     title(strcat('Current Speeds at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
+% %     pause
+% %     close all
+% % end
 
 % -------------------------------------------------------------------------
 % --------------    Flow Power vs Turbine Power Plots        --------------
@@ -313,7 +313,7 @@ end
 % --------  Theoretical Energy Production and Consumption Plot  -----------
 % -------------------------------------------------------------------------
 
-% % start_index=5473;
+% % start_index=5473;                       %Start at end of barge over ADCP bad data
 % % A=7;                                   %[m^2]
 % % E_bat=10000;                           %[Wh]
 % % Energy_Consumption_Per_Month=900000;    %[Wh]
@@ -332,6 +332,11 @@ end
 % % j=1;
 % % k=1;
 % % l=1;
+% % %This might be ok or it might mess things up
+% % Under_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+% % Over_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+% % Middle_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+% % %To here
 % % for i=2:length(Power_lim{10}(start_index:end))-1
 % %     E(1)=E_bat;
 % %     E_test(1)=E_bat;
@@ -382,6 +387,117 @@ end
 % % xlabel('Time[Days]')
 % % ylabel('Battery Level[Wh]')
 % % legend('Battery Level','Dumped Energy','Grid Energy')
+
+% -------------------------------------------------------------------------
+% --------  Theoretical Energy Production and Consumption Plot 2  ---------
+% -------------------------------------------------------------------------
+
+start_index=5473;                       %Start at end of barge over ADCP bad data
+Bin_Rep=5;                              %Bin{5} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
+Battery_Capacity=10000;                 %[Wh] 1 Tesla Power Wall
+Battery_Start_Capacity=5000;            %[Wh] Assumed starting capacity
+Energy_Consumption_Per_Month=900000;    %[Wh] Based off TECH 797 Report
+Circuit_Voltage=120;                    %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
+Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W] How many watts are consumed per hour assuming constant load
+Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{Bin_Rep}(start_index:end))); %A vector of constant power consumption
+Energy_Consumption_Vector=Power_Consumption_Vector/4;%The amount of [Wh] consumed in a vector where each element represents 15 minutes
+Current_Load_Vector=Energy_Consumption_Vector/Circuit_Voltage;%This is the amount of current[A] that the load is drawing assuming everything is running on a 120 V circuit.
+Power_Production_Vector=Power_lim{Bin_Rep};
+Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced in a vector where each element represents 15 minutes
+Current_Source_Vector=Energy_Production_Vector/Circuit_Voltage;%This is the amount of current[A] that the turbine is producing assuming everything is running on a 120 V circuit.
+%Battery Profile(This assumes linear profile between capacity[Ah] and charge level[V], I know this is not realistic)
+N=100;%Number of profile points
+Max_Voltage=450;%[V] Battery full voltage found on http://www.teslamotors.com/powerwall
+Min_Voltage=350;%[V] Battery empty voltage found on http://www.teslamotors.com/powerwall
+Charge_Prof=linspace(Min_Voltage,Max_Voltage,N);
+Capacity_Prof=linspace(0,Battery_Capacity,N);
+figure
+subplot(2,1,1)
+plot(Time_Increment_Days(start_index:end),A*Power_lim{10}(start_index:end))
+hold on
+plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
+title('Power Production and Consumption')
+xlabel('Time[Days]')
+ylabel('Power[W]')
+legend('Power Production','Power Consumption')
+j=1;
+k=1;
+l=1;
+for i=2:length(Power_lim{12}(start_index:end))-1%B
+    Capacity_Level(1)=Battery_Start_Capacity;
+    Charge_Level(1)=interp1(Capacity_Prof,Charge_Prof,Battery_Start_Capacity);
+
+    %Battery becomes full ATS=Open, Break=On
+    if Charge_Level(i)>Max_Voltage
+        Current_Source_Vector(i)=0;
+        j=j+1;
+    end
+    %Battery becomes empty ATS=Closed, Break=Off
+    if Charge_Level(i)<Min_Voltage
+        k=k+1;
+    end
+    %Battery is in between empty and full ATS=Open, Break=Off
+    if Charge_Level(i)>Min_Voltage && Charge_Level(i)<Max_Voltage
+        l=l+1;
+    end
+    Capacity_Level(i)=Capacity_Level(i-1)+Current_Source_Vector(i)-Current_Load_Vector(i);%subract out Ah consumed by load add in Ah produced by turbine
+    Charge_Level(i)=interp1(Capacity_Prof,Charge_Prof,Capacity_Level(i));
+end
+%This might be ok or it might mess things up
+Under_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+Over_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+Middle_indeces=zeros(length(Time_Increment_Days(start_index:end)));
+%To here
+for i=2:length(Power_lim{10}(start_index:end))-1
+    Battery_Charge(1)=E_bat;
+    E_test(1)=E_bat;
+    E_test(i)=E_test(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
+    E(i)=E(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
+    if E(i)>E_bat;
+        E_over(i)=A*Power_lim{10}(start_index+i)/4;
+        E(i)=E(i-1)-Energy_Consumption_Vector(i);
+        Over_indeces(j)=i;
+        j=j+1;
+    end
+    if E(i)<0;
+        E_under(i)=-E(i);
+        E_over(i)=0;
+        Under_indeces(k)=i;
+        k=k+1;
+    end
+    if E(i)<E_bat && E(i)>0
+        E_under(i)=0;
+        Middle_indeces(l)=i;
+        l=l+1;
+        E_over(i)=0;
+    end
+end
+for k=1:length(Under_indeces)
+    E(Under_indeces(k))=0;
+end
+for i=1:2:length(Over_indeces)-1
+    Dump(i)=trapz(Time_Increment(Over_indeces(i):Over_indeces(i+1)),(A*Power_lim{10}(start_index+Over_indeces(i):start_index+Over_indeces(i+1))/60));
+end
+Dumped_Energy=sum(Dump);
+for i=1:2:length(Under_indeces)-1
+    Grid(i)=trapz(Time_Increment(Under_indeces(i):Under_indeces(i+1)),(Power_Consumption_Vector(Under_indeces(i):Under_indeces(i+1))/60));
+end
+Grid_Energy=sum(Grid);
+for i=1:2:length(Middle_indeces)-1
+    Converted(i)=trapz(Time_Increment(Middle_indeces(i):Middle_indeces(i+1)),(A*Power_lim{10}(start_index+Middle_indeces(i):start_index+Middle_indeces(i+1))/60));
+end
+Converted_Energy=sum(Converted);
+
+subplot(2,1,2)
+plot(Time_Increment_Days(start_index+1:end),E)
+hold on
+plot(Time_Increment_Days(start_index+1:end),E_over,'g')
+plot(Time_Increment_Days(start_index+1:end),E_under,'r')
+% plot(Time_Increment_Days(start_index+1:end),E_test,'k')
+title('Battery Level')
+xlabel('Time[Days]')
+ylabel('Battery Level[Wh]')
+legend('Battery Level','Dumped Energy','Grid Energy')
 
 % -------------------------------------------------------------------------
 % --------       Calculate Energy Density in Top Bins         -----------
