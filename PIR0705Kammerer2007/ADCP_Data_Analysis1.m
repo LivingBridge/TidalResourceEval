@@ -712,16 +712,16 @@ bin = 1;
 % ------------   Polar Plots of Speed and Current Direction    ------------
 % -------------------------------------------------------------------------
 
-for i=1:number_of_bins
-    figure(i)
-    t = 0 : .01 : 2 * pi;
-    P = polar(t, 2.5 * ones(size(t)));
-    set(P, 'Visible', 'off')
-    hold on
-    polar(degtorad(Direction{i}),Speed{i},'.b')
-    view([90 -90])
-    title({strcat('Current Speed[m/s] and Direction at Approximately',num2str(Depth{i}),'m Above Seafloor'),''})
-end
+% % for i=1:number_of_bins
+% %     figure(i)
+% %     t = 0 : .01 : 2 * pi;
+% %     P = polar(t, 2.5 * ones(size(t)));
+% %     set(P, 'Visible', 'off')
+% %     hold on
+% %     polar(degtorad(Direction{i}),Speed{i},'.b')
+% %     view([90 -90])
+% %     title({strcat('Current Speed[m/s] and Direction at Approximately',num2str(Depth{i}),'m Above Seafloor'),''})
+% % end
 
 % -------------------------------------------------------------------------
 % ------------              Moving Bins Analysis               ------------
