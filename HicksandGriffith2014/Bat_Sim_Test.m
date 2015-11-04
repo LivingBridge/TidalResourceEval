@@ -29,15 +29,15 @@ for i=20:40
     Power_Consumption_Vector(i)=0;
 end
 
-[ Energy_Level,Power_Lost,Power_Grid ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity );
+[ Energy_Level,Power_Lost,Power_Grid,Energy_Lost,Energy_Grid,Energy_Conv ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity );
 
 figure
 subplot(2,1,1)
 plot(1:40,Power_Production_Vector,'g')
 hold on
 plot(1:40,Power_Consumption_Vector,'r')
-plot(1:40,Power_Lost,'y')
-plot(1:40,Power_Grid,'k')
+plot(1:40,Power_Lost,'y','LineWidth',3)
+plot(1:40,Power_Grid,'k','LineWidth',3)
 title('Power Production and Consumption')
 xlabel('Time[Days]')
 ylabel('Power[W]')

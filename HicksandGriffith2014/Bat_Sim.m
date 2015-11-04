@@ -1,10 +1,10 @@
-function [ Energy_Level,Power_Lost,Power_Grid ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity )
+function [ Energy_Level,Power_Lost,Power_Grid,Energy_Lost,Energy_Grid,Energy_Conv ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity )
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 
 Battery_Start_Capacity=0.5*Battery_Capacity;    %[Wh] Assumed starting capacity
 Circuit_Voltage=120;                            %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
-
+Time_Step=15;                                   %[min] The number of minutes between ADCP measurements
 
 %Detailed Battery Parameters
 %Battery Profile(This assumes linear profile between capacity[Ah] and charge level[V], I know this is not realistic)
@@ -19,6 +19,7 @@ Energy_Consumption_Vector=Power_Consumption_Vector/4;%The amount of [Wh] consume
 Current_Load_Vector=Energy_Consumption_Vector/Circuit_Voltage;%This is the amount of current[A] that the load is drawing assuming everything is running on a 120 V circuit.
 Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced in a vector where each element represents 15 minutes
 Current_Source_Vector=Energy_Production_Vector/Circuit_Voltage;%This is the amount of current[A] that the turbine is producing assuming everything is running on a 120 V circuit.
+Time_Vector=linspace(1,(Time_Step/60)*length(Power_Production_Vector),length(Power_Production_Vector));%[hr] A vector representing the time at each index
 
 j=1;
 k=1;
@@ -48,6 +49,19 @@ for i=2:length(Power_Production_Vector)-1
         Power_Grid(i+1)=0;%No power is drawn from the grid
         Power_Lost(i+1)=0;%No power is wasted as the turbine spins and all possible power is stored in the battery and then consumed
         l=l+1;
+    end
+end
+
+Energy_Lost=trapz(Time_Vector,Power_Lost); %[Wh] The amount of energy that could have been generated, but was not when the turbine had its breaks engaged through the entire simulation
+Energy_Grid=trapz(Time_Vector,Power_Grid); %[Wh] The amount of energy that was drawn from the grid throughout the entire simulation
+Energy_Conv=trapz(Time_Vector,Power_Production_Vector);%[Wh] The amount of energy converted by the throughout the entire simulation
+
+for i=1:length(Energy_Level)
+    if Power_Grid(i)==0
+        Power_Grid(i)=NaN;
+    end
+    if Power_Lost(i)==0
+        Power_Lost(i)=NaN;
     end
 end
 
