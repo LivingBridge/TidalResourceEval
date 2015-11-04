@@ -5,7 +5,8 @@ clc
 
 Battery_Capacity=100;
 %Simulate Production=Consumption
-%Should give a flat line at the batteries starting capacity or charge level
+%Should give a flat line at the batteries starting capacity or charge
+%level
 for i=1:10
     Power_Production_Vector(i)=10;
     Power_Consumption_Vector(i)=10;
@@ -43,5 +44,5 @@ subplot(2,1,2)
 plot(1:39,Energy_Level)
 title('Battery Level')
 xlabel('Time[Days]')
-ylabel('Battery Level[V]')
+ylabel('Battery Level[Wh]')
 legend('Battery Level','Dumped Energy','Grid Energy')
