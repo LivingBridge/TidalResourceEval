@@ -1,4 +1,4 @@
-function [ Charge_Level ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity )
+function [ Energy_Level,Power_Lost,Power_Grid ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity )
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -23,33 +23,61 @@ Current_Source_Vector=Energy_Production_Vector/Circuit_Voltage;%This is the amou
 j=1;
 k=1;
 l=1;
-% Capacity_Level=zeros(length(Power_Production_Vector));
-% Charge_Level
-for i=2:length(Power_Production_Vector-1)
-    Capacity_Level(1)=Battery_Start_Capacity; %[Wh]
-    Charge_Level(1)=interp1(Capacity_Prof,Charge_Prof,Battery_Start_Capacity); %[V]
-    Capacity_Level(i)=Capacity_Level(i-1)+(Current_Source_Vector(i)-Current_Load_Vector(i));%subract out Ah consumed by load add in Ah produced by turbine
-    Charge_Level(i)=interp1(Capacity_Prof,Charge_Prof,Capacity_Level(i));
+%Energy Level
+for i=2:length(Power_Production_Vector)-1
+    Energy_Level(1)=Battery_Start_Capacity; %[Wh]
+    Energy_Level(i)=Energy_Level(i-1)+Energy_Production_Vector(i)-Energy_Consumption_Vector(i);%subract out Wh consumed by load add in Wh produced by turbine
     %Battery becomes full ATS=Open, Break=On
-    if Charge_Level(i)>Max_Voltage
-        Current_Source_Vector(i+1)=0;%Break is on, thus no current comes from turbine to battery
+    if Energy_Level(i)>=Battery_Capacity
+        Energy_Level(i)=Battery_Capacity;
+        Energy_Production_Vector(i+1)=0;%Break turns on, thus no current comes from turbine to battery
         Power_Lost(i+1)=Power_Production_Vector(i+1);%The amount of power lost is equal to the amount of power that could have been generated
+        Power_Grid(i+1)=0;
+        %Battery becomes empty ATS=Closed, Break=Off
         j=j+1;
     end
-    %Battery becomes empty ATS=Closed, Break=Off
-    if Charge_Level(i)<Min_Voltage
-        Current_Load_Vector(i+1)=0;%Current draw from the battery goes to zero because the load is drawing from the grid
+    if Energy_Level(i)<=0
+        Energy_Level(i)=0;
+        Energy_Consumption_Vector(i+1)=0;%Current draw from the battery goes to zero because the load is drawing from the grid
         Power_Grid(i+1)=Power_Consumption_Vector(i+1);%All power consumption comes off the grid
+        Power_Lost(i+1)=0;
         k=k+1;
     end
     %Battery is in between empty and full ATS=Open, Break=Off
-    if Charge_Level(i)>Min_Voltage && Charge_Level(i)<Max_Voltage
+    if Energy_Level(i)>0 && Energy_Level(i)<Battery_Capacity
         Power_Grid(i+1)=0;%No power is drawn from the grid
         Power_Lost(i+1)=0;%No power is wasted as the turbine spins and all possible power is stored in the battery and then consumed
         l=l+1;
     end
-
 end
+
+
+% Charge_Level
+% for i=2:length(Power_Production_Vector-1)
+%     Capacity_Level(1)=Battery_Start_Capacity; %[Wh]
+%     Charge_Level(1)=interp1(Capacity_Prof,Charge_Prof,Battery_Start_Capacity); %[V]
+%     Capacity_Level(i)=Capacity_Level(i-1)+(Current_Source_Vector(i)-Current_Load_Vector(i));%subract out Ah consumed by load add in Ah produced by turbine
+%     Charge_Level(i)=interp1(Capacity_Prof,Charge_Prof,Capacity_Level(i));
+%     %Battery becomes full ATS=Open, Break=On
+%     if Charge_Level(i)>Max_Voltage
+%         Current_Source_Vector(i+1)=0;%Break is on, thus no current comes from turbine to battery
+%         Power_Lost(i+1)=Power_Production_Vector(i+1);%The amount of power lost is equal to the amount of power that could have been generated
+%         j=j+1;
+%     end
+%     %Battery becomes empty ATS=Closed, Break=Off
+%     if Charge_Level(i)<Min_Voltage
+%         Current_Load_Vector(i+1)=0;%Current draw from the battery goes to zero because the load is drawing from the grid
+%         Power_Grid(i+1)=Power_Consumption_Vector(i+1);%All power consumption comes off the grid
+%         k=k+1;
+%     end
+%     %Battery is in between empty and full ATS=Open, Break=Off
+%     if Charge_Level(i)>Min_Voltage && Charge_Level(i)<Max_Voltage
+%         Power_Grid(i+1)=0;%No power is drawn from the grid
+%         Power_Lost(i+1)=0;%No power is wasted as the turbine spins and all possible power is stored in the battery and then consumed
+%         l=l+1;
+%     end
+% 
+% end
 
 end
 
