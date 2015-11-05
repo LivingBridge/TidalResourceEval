@@ -411,7 +411,7 @@ subplot(2,1,1)
 plot(Time_Increment_Days(start_index:end),Power_Production_Vector,'g')
 hold on
 plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
-plot(Time_Increment_Days(start_index:end),Power_Lost,'y','LineWidth',3)
+plot(Time_Increment_Days(start_index:end),Power_Lost,'yo')
 plot(Time_Increment_Days(start_index:end),Power_Grid,'k','LineWidth',3)
 title('Power Production and Consumption')
 xlabel('Time[Days]')
