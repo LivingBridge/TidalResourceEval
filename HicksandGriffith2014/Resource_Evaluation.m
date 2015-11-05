@@ -393,177 +393,36 @@ end
 % -------------------------------------------------------------------------
 
 % An attempt that does not account for battery voltage
-% % start_index=5473;                           %Start at end of barge over ADCP bad data
-% % Bin_Rep=6;                                  %Bin{6} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
-% % Battery_Capacity=10000;                    %[Wh] 1 Tesla Power Wall
-% % Battery_Start_Capacity=Battery_Capacity/2;  %[Wh] Assumed starting capacity
-% % Energy_Consumption_Per_Month=900000;        %[Wh] Based off TECH 797 Report
-% % Circuit_Voltage=120;                        %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
-% % Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W] How many watts are consumed per hour assuming constant load
-% % Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{Bin_Rep}(start_index:end))); %A vector of constant power consumption
-% % Energy_Consumption_Vector=Power_Consumption_Vector/4;%The amount of [Wh] consumed in a vector where each element represents 15 minutes
-% % Power_Production_Vector=Power_lim{Bin_Rep}(start_index:end);
-% % Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced in a vector where each element represents 15 minutes
-% % figure
-% % subplot(2,1,1)
-% % plot(Time_Increment_Days(start_index:end),Power_Production_Vector)
-% % hold on
-% % plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
-% % title('Power Production and Consumption')
-% % xlabel('Time[Days]')
-% % ylabel('Power[W]')
-% % legend('Power Production','Power Consumption')
-% % j=1;
-% % k=1;
-% % l=1;
-% % % Capacity_Level=zeros(length(Power_Production_Vector));
-% % % Charge_Level
-% % for i=2:length(Power_Production_Vector-1)
-% %     Energy_Level(1)=Battery_Start_Capacity; %[Wh]
-% %     Energy_Level(i)=Energy_Level(i-1)+Energy_Production_Vector(i)-Energy_Consumption_Vector(i);%subract out Wh consumed by load add in Wh produced by turbine
-% %     %Battery becomes full ATS=Open, Break=On
-% %     if Energy_Level(i)>Battery_Capacity
-% %         Energy_Production_Vector(i+1)=0;%Break turns on, thus no current comes from turbine to battery
-% %         Power_Lost(i+1)=Power_Production_Vector(i+1);%The amount of power lost is equal to the amount of power that could have been generated
-% %         j=j+1;
-% %     end
-% %     %Battery becomes empty ATS=Closed, Break=Off
-% %     if Energy_Level(i)<0
-% %         Energy_Consumption_Vector(i+1)=0;%Current draw from the battery goes to zero because the load is drawing from the grid
-% %         Power_Grid(i+1)=Power_Consumption_Vector(i+1);%All power consumption comes off the grid
-% %         k=k+1;
-% %     end
-% %     %Battery is in between empty and full ATS=Open, Break=Off
-% %     if Energy_Level(i)>0 && Energy_Level(i)<Battery_Capacity
-% %         Power_Grid(i+1)=0;%No power is drawn from the grid
-% %         Power_Lost(i+1)=0;%No power is wasted as the turbine spins and all possible power is stored in the battery and then consumed
-% %         l=l+1;
-% %     end
-% % end
-% % subplot(2,1,2)
-% % plot(Time_Increment_Days(start_index:end),Energy_Level)
-% % title('Battery Level')
-% % xlabel('Time[Days]')
-% % ylabel('Battery Level[Wh]')
-% % legend('Battery Level','Dumped Energy','Grid Energy')
-
-%An attempt using a V vs Ah profile
-start_index=5473;                       %Start at end of barge over ADCP bad data
-Bin_Rep=6;                              %Bin{5} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
-Battery_Capacity=10000;                 %[Wh] 1 Tesla Power Wall
-Battery_Start_Capacity=5000;            %[Wh] Assumed starting capacity
-Energy_Consumption_Per_Month=900000;    %[Wh] Based off TECH 797 Report
-Circuit_Voltage=120;                    %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
+start_index=5473;                           %Start at end of barge over ADCP bad data
+Bin_Rep=6;                                  %Bin{6} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
+Battery_Capacity=10000;                    %[Wh] 1 Tesla Power Wall
+Battery_Start_Capacity=Battery_Capacity/2;  %[Wh] Assumed starting capacity
+Energy_Consumption_Per_Month=900000;        %[Wh] Based off TECH 797 Report
+Circuit_Voltage=120;                        %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
 Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W] How many watts are consumed per hour assuming constant load
 Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{Bin_Rep}(start_index:end))); %A vector of constant power consumption
 Energy_Consumption_Vector=Power_Consumption_Vector/4;%The amount of [Wh] consumed in a vector where each element represents 15 minutes
-Current_Load_Vector=Energy_Consumption_Vector/Circuit_Voltage;%This is the amount of current[A] that the load is drawing assuming everything is running on a 120 V circuit.
 Power_Production_Vector=Power_lim{Bin_Rep}(start_index:end);
 Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced in a vector where each element represents 15 minutes
-Current_Source_Vector=Energy_Production_Vector/Circuit_Voltage;%This is the amount of current[A] that the turbine is producing assuming everything is running on a 120 V circuit.
-%Battery Profile(This assumes linear profile between capacity[Ah] and charge level[V], I know this is not realistic)
-N=100;%Number of profile points
-Max_Voltage=450;%[V] Battery full voltage found on http://www.teslamotors.com/powerwall
-Min_Voltage=350;%[V] Battery empty voltage found on http://www.teslamotors.com/powerwall
-Charge_Prof=linspace(Min_Voltage,Max_Voltage,N);%[V]
-Capacity_Prof=linspace(0,Battery_Capacity,N);   %[Wh]
+[ Energy_Level,Power_Lost,Power_Grid,Energy_Lost,Energy_Grid,Energy_Conv ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity );
+
 figure
 subplot(2,1,1)
-plot(Time_Increment_Days(start_index:end),Power_Production_Vector)
+plot(Time_Increment_Days(start_index:end),Power_Production_Vector,'g')
 hold on
 plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
+plot(Time_Increment_Days(start_index:end),Power_Lost,'y','LineWidth',3)
+plot(Time_Increment_Days(start_index:end),Power_Grid,'k','LineWidth',3)
 title('Power Production and Consumption')
 xlabel('Time[Days]')
 ylabel('Power[W]')
-legend('Power Production','Power Consumption')
-j=1;
-k=1;
-l=1;
-% Capacity_Level=zeros(length(Power_Production_Vector));
-% Charge_Level
-for i=2:length(Power_Production_Vector-1)
-    Capacity_Level(1)=Battery_Start_Capacity; %[Wh]
-    Charge_Level(1)=interp1(Capacity_Prof,Charge_Prof,Battery_Start_Capacity); %[V]
-    Capacity_Level(i)=Capacity_Level(i-1)+(Current_Source_Vector(i)-Current_Load_Vector(i));%subract out Ah consumed by load add in Ah produced by turbine
-    Charge_Level(i)=interp1(Capacity_Prof,Charge_Prof,Capacity_Level(i));
-    %Battery becomes full ATS=Open, Break=On
-    if Charge_Level(i)>Max_Voltage
-        Current_Source_Vector(i+1)=0;%Break is on, thus no current comes from turbine to battery
-        Power_Lost(i+1)=Power_Production_Vector(i+1);%The amount of power lost is equal to the amount of power that could have been generated
-        j=j+1;
-    end
-    %Battery becomes empty ATS=Closed, Break=Off
-    if Charge_Level(i)<Min_Voltage
-        Current_Load_Vector(i+1)=0;%Current draw from the battery goes to zero because the load is drawing from the grid
-        Power_Grid(i+1)=Power_Consumption_Vector(i+1);%All power consumption comes off the grid
-        k=k+1;
-    end
-    %Battery is in between empty and full ATS=Open, Break=Off
-    if Charge_Level(i)>Min_Voltage && Charge_Level(i)<Max_Voltage
-        Power_Grid(i+1)=0;%No power is drawn from the grid
-        Power_Lost(i+1)=0;%No power is wasted as the turbine spins and all possible power is stored in the battery and then consumed
-        l=l+1;
-    end
-
-end
+legend('Power Production','Power Consumption','Power Lost','Power Grid')
 subplot(2,1,2)
-plot(Time_Increment_Days(start_index:end),Charge_Level)
+plot(Time_Increment_Days(start_index:end-1),Energy_Level)
 title('Battery Level')
 xlabel('Time[Days]')
-ylabel('Battery Level[V]')
+ylabel('Battery Level[Wh]')
 legend('Battery Level','Dumped Energy','Grid Energy')
-
-% %This might be ok or it might mess things up
-% Under_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% Over_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% Middle_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% %To here
-% for i=2:length(Power_lim{10}(start_index:end))-1
-%     Battery_Charge(1)=E_bat;
-%     E_test(1)=E_bat;
-%     E_test(i)=E_test(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
-%     E(i)=E(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
-%     if E(i)>E_bat;
-%         E_over(i)=A*Power_lim{10}(start_index+i)/4;
-%         E(i)=E(i-1)-Energy_Consumption_Vector(i);
-%         Over_indeces(j)=i;
-%         j=j+1;
-%     end
-%     if E(i)<0;
-%         E_under(i)=-E(i);
-%         E_over(i)=0;
-%         Under_indeces(k)=i;
-%         k=k+1;
-%     end
-%     if E(i)<E_bat && E(i)>0
-%         E_under(i)=0;
-%         Middle_indeces(l)=i;
-%         l=l+1;
-%         E_over(i)=0;
-%     end
-% end
-% for k=1:length(Under_indeces)
-%     E(Under_indeces(k))=0;
-% end
-% for i=1:2:length(Over_indeces)-1
-%     Dump(i)=trapz(Time_Increment(Over_indeces(i):Over_indeces(i+1)),(A*Power_lim{10}(start_index+Over_indeces(i):start_index+Over_indeces(i+1))/60));
-% end
-% Dumped_Energy=sum(Dump);
-% for i=1:2:length(Under_indeces)-1
-%     Grid(i)=trapz(Time_Increment(Under_indeces(i):Under_indeces(i+1)),(Power_Consumption_Vector(Under_indeces(i):Under_indeces(i+1))/60));
-% end
-% Grid_Energy=sum(Grid);
-% for i=1:2:length(Middle_indeces)-1
-%     Converted(i)=trapz(Time_Increment(Middle_indeces(i):Middle_indeces(i+1)),(A*Power_lim{10}(start_index+Middle_indeces(i):start_index+Middle_indeces(i+1))/60));
-% end
-% Converted_Energy=sum(Converted);
-
-
-% hold on
-% plot(Time_Increment_Days(start_index:end),E_over,'g')
-% plot(Time_Increment_Days(start_index:end),E_under,'r')
-% plot(Time_Increment_Days(start_index:end),E_test,'k')
-
 
 % -------------------------------------------------------------------------
 % --------       Calculate Energy Density in Top Bins         -----------
