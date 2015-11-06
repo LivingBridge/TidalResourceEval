@@ -24,9 +24,14 @@ end
 %battery becomes full where it should give a constant charge or capacity
 %level at the batteries full capacity and show that the amount of power
 %lost is increasing linearly
-for i=20:40
+for i=20:35
     Power_Production_Vector(i)=30;
     Power_Consumption_Vector(i)=0;
+end
+
+for i=35:40
+    Power_Production_Vector(i)=30;
+    Power_Consumption_Vector(i)=15;
 end
 
 [ Energy_Level,Power_Lost,Power_Grid,Energy_Lost,Energy_Grid,Energy_Conv ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity );

@@ -1,5 +1,5 @@
 clear all; close all; clc
-A=4.5;              %Turbine Area[m^2](1 for power density)
+A=5.25;              %Turbine Area[m^2](1 for power density)
 S=29.8;             %Average Salinity[PPT] over a year(2004) at Great Bay Coastal Marine Lab (greatbaydata.org)
 T=8.749;            %Average Temperature[C] over a year(2004) at Great Bay Coastal Marine Lab (greatbaydata.org)
 sample_period=15;   %minutes(check this)
@@ -309,90 +309,11 @@ end
 % % ylabel('Energy Produced in 30 Days[Wh]')
 % % legend('Cp=0.45, Cut In=1m/s','Cp=0.45, Cut In=0.9m/s','Cp=0.45, Cut In=0.5m/s','Cp=0.35, Cut In=1m/s','Cp=0.35, Cut In=0.9m/s','Cp=0.35, Cut In=0.5m/s','Cp=0.25, Cut In=1m/s','Cp=0.25, Cut In=0.9m/s','Cp=0.25, Cut In=0.5m/s','Location','NorthWest')
 
-% -------------------------------------------------------------------------
-% --------  Theoretical Energy Production and Consumption Plot  -----------
-% -------------------------------------------------------------------------
-
-% % start_index=5473;                       %Start at end of barge over ADCP bad data
-% % A=7;                                   %[m^2]
-% % E_bat=10000;                           %[Wh]
-% % Energy_Consumption_Per_Month=900000;    %[Wh]
-% % Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W]
-% % Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{10}(start_index:end)));
-% % Energy_Consumption_Vector=Power_Consumption_Vector/4;
-% % figure
-% % subplot(2,1,1)
-% % plot(Time_Increment_Days(start_index:end),A*Power_lim{10}(start_index:end))
-% % hold on
-% % plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
-% % title('Power Production and Consumption')
-% % xlabel('Time[Days]')
-% % ylabel('Power[W]')
-% % legend('Power Production','Power Consumption')
-% % j=1;
-% % k=1;
-% % l=1;
-% % %This might be ok or it might mess things up
-% % Under_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% % Over_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% % Middle_indeces=zeros(length(Time_Increment_Days(start_index:end)));
-% % %To here
-% % for i=2:length(Power_lim{10}(start_index:end))-1
-% %     E(1)=E_bat;
-% %     E_test(1)=E_bat;
-% %     E_test(i)=E_test(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
-% %     E(i)=E(i-1)+(-Energy_Consumption_Vector(i)+(A*Power_lim{10}(start_index+i)/4));
-% %     if E(i)>E_bat;
-% %         E_over(i)=A*Power_lim{10}(start_index+i)/4;
-% %         E(i)=E(i-1)-Energy_Consumption_Vector(i);
-% %         Over_indeces(j)=i;
-% %         j=j+1;
-% %     end
-% %     if E(i)<0;
-% %         E_under(i)=-E(i);
-% %         E_over(i)=0;
-% %         Under_indeces(k)=i;
-% %         k=k+1;
-% %     end
-% %     if E(i)<E_bat && E(i)>0
-% %         E_under(i)=0;
-% %         Middle_indeces(l)=i;
-% %         l=l+1;
-% %         E_over(i)=0;
-% %     end
-% % end
-% % for k=1:length(Under_indeces)
-% %     E(Under_indeces(k))=0;
-% % end
-% % for i=1:2:length(Over_indeces)-1
-% %     Dump(i)=trapz(Time_Increment(Over_indeces(i):Over_indeces(i+1)),(A*Power_lim{10}(start_index+Over_indeces(i):start_index+Over_indeces(i+1))/60));
-% % end
-% % Dumped_Energy=sum(Dump);
-% % for i=1:2:length(Under_indeces)-1
-% %     Grid(i)=trapz(Time_Increment(Under_indeces(i):Under_indeces(i+1)),(Power_Consumption_Vector(Under_indeces(i):Under_indeces(i+1))/60));
-% % end
-% % Grid_Energy=sum(Grid);
-% % for i=1:2:length(Middle_indeces)-1
-% %     Converted(i)=trapz(Time_Increment(Middle_indeces(i):Middle_indeces(i+1)),(A*Power_lim{10}(start_index+Middle_indeces(i):start_index+Middle_indeces(i+1))/60));
-% % end
-% % Converted_Energy=sum(Converted);
-% % 
-% % subplot(2,1,2)
-% % plot(Time_Increment_Days(start_index+1:end),E)
-% % hold on
-% % plot(Time_Increment_Days(start_index+1:end),E_over,'g')
-% % plot(Time_Increment_Days(start_index+1:end),E_under,'r')
-% % % plot(Time_Increment_Days(start_index+1:end),E_test,'k')
-% % title('Battery Level')
-% % xlabel('Time[Days]')
-% % ylabel('Battery Level[Wh]')
-% % legend('Battery Level','Dumped Energy','Grid Energy')
 
 % -------------------------------------------------------------------------
-% --------  Theoretical Energy Production and Consumption Plot 2  ---------
+% --------  Theoretical Energy Production and Consumption Plot   ----------
 % -------------------------------------------------------------------------
 
-% An attempt that does not account for battery voltage
 start_index=5473;                           %Start at end of barge over ADCP bad data
 Bin_Rep=6;                                  %Bin{6} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
 Battery_Capacity=10000;                    %[Wh] 1 Tesla Power Wall
@@ -408,21 +329,23 @@ Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced 
 
 figure
 subplot(2,1,1)
-plot(Time_Increment_Days(start_index:end),Power_Production_Vector,'g')
+plot(Time_Increment_Days(start_index:end),Power_Production_Vector,'b')
 hold on
 plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
-plot(Time_Increment_Days(start_index:end),Power_Lost,'y','LineWidth',3)
+plot(Time_Increment_Days(start_index:end),Power_Lost,'yo')
 plot(Time_Increment_Days(start_index:end),Power_Grid,'k','LineWidth',3)
 title('Power Production and Consumption')
 xlabel('Time[Days]')
 ylabel('Power[W]')
-legend('Power Production','Power Consumption','Power Lost','Power Grid')
+legend('Power Production','Power Consumption','Over Production','Under Production')
 subplot(2,1,2)
 plot(Time_Increment_Days(start_index:end-1),Energy_Level)
 title('Battery Level')
 xlabel('Time[Days]')
 ylabel('Battery Level[Wh]')
-legend('Battery Level','Dumped Energy','Grid Energy')
+axes('Position',[0 0 1 1],'Visible','off') % sets ax1 to current axes
+str = {strcat('Turbine Area:',num2str(A),'m^2',', Battery Capacity:',num2str(Battery_Capacity),'Wh',', Over Producing:',num2str(100*(Energy_Lost/(Energy_Grid+Energy_Conv+Energy_Lost))), '%, Under Producing:',num2str(100*(Energy_Grid/(Energy_Grid+Energy_Conv+Energy_Lost))),'%')};
+text(0,0.02,str(:))
 
 % -------------------------------------------------------------------------
 % --------       Calculate Energy Density in Top Bins         -----------
