@@ -392,6 +392,7 @@ end
 % ------------------  Depth vs Speed vs Time  -----------------------------
 % -------------------------------------------------------------------------
 
+<<<<<<< HEAD
 % % for i = 1:length(Bin_Height)
 % %     Bin_Heights(i) = Bin_Height{1,i}(1,1);
 % % end
@@ -438,6 +439,39 @@ end
 % % ylim([0,20])
 % % xlabel('Time[days]')
 % % ylabel('Depth[m]')
+=======
+% An attempt that does not account for battery voltage
+start_index=5473;                           %Start at end of barge over ADCP bad data
+Bin_Rep=6;                                  %Bin{6} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
+Battery_Capacity=10000;                    %[Wh] 1 Tesla Power Wall
+Battery_Start_Capacity=Battery_Capacity/2;  %[Wh] Assumed starting capacity
+Energy_Consumption_Per_Month=900000;        %[Wh] Based off TECH 797 Report
+Circuit_Voltage=120;                        %[V-AC] Assumed...this could be different in reality depending on circuit design. And could also be different coming from turbine vs coming off alternator to the load.
+Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W] How many watts are consumed per hour assuming constant load
+Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{Bin_Rep}(start_index:end))); %A vector of constant power consumption
+Energy_Consumption_Vector=Power_Consumption_Vector/4;%The amount of [Wh] consumed in a vector where each element represents 15 minutes
+Power_Production_Vector=Power_lim{Bin_Rep}(start_index:end);
+Energy_Production_Vector=Power_Production_Vector/4;%The amount of [Wh] produced in a vector where each element represents 15 minutes
+[ Energy_Level,Power_Lost,Power_Grid,Energy_Lost,Energy_Grid,Energy_Conv ] = Bat_Sim( Power_Production_Vector,Power_Consumption_Vector,Battery_Capacity );
+
+figure
+subplot(2,1,1)
+plot(Time_Increment_Days(start_index:end),Power_Production_Vector,'g')
+hold on
+plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
+plot(Time_Increment_Days(start_index:end),Power_Lost,'yo')
+plot(Time_Increment_Days(start_index:end),Power_Grid,'k','LineWidth',3)
+title('Power Production and Consumption')
+xlabel('Time[Days]')
+ylabel('Power[W]')
+legend('Power Production','Power Consumption','Power Lost','Power Grid')
+subplot(2,1,2)
+plot(Time_Increment_Days(start_index:end-1),Energy_Level)
+title('Battery Level')
+xlabel('Time[Days]')
+ylabel('Battery Level[Wh]')
+legend('Battery Level','Dumped Energy','Grid Energy')
+>>>>>>> 2e3735e43f1fab78a3e2c75bcf2afc13a9211bf9
 
 % -------------------------------------------------------------------------
 % --------       Calculate Energy Density in Top Bins         -------------
