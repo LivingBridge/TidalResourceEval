@@ -20,6 +20,7 @@ for i=1:c(2)
         Speed{i}(j)=NaN;
     end
     Direction{i}=degtorad(Data.adcp(:,i,14)+16.25);
+    Direction_deg{i}=Data.adcp(:,i,14)+16.25;%16.25 is magnetic variation given in MEMBRVEL.RPT file
     Bin_Height{i}=Data.adcp(:,i,8);    %approximate depth below water surface[m]
     rho(i)=seadens(T,S,ADCP_Depth(i));
     Power{i} = (1/2)*A*rho(i)*Speed{i}.^3;
@@ -149,7 +150,7 @@ end
 % %     figure(i)
 % %     bin_centers=[1000:1000:12000];
 % %     hist(Speed{i},2*(length(Speed{i})^(1/3)));
-% %     title(strcat('Current Speeds at:',num2str(height(i)),'m Above Seafloor'))
+% %     title(strcat('Current Speeds at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
 % %     ylabel('Frequency')
 % %     xlabel('Speed[m/s]')
 % %     xlim([0,2.5])
@@ -162,6 +163,42 @@ end
 % --------------     Histograms of Energy in Tidal Cycle      -------------
 % -------------------------------------------------------------------------
 
+% % for i=5:c(2)
+% %     l = 1;
+% %     for j = 1:length(Velocity{1,i}(:,1))-1
+% %         if Velocity{1,i}(j,1)>0
+% %             Ebb_Speed{1,i}(j) = abs(Velocity{1,i}(j,1));
+% %             Flood_Speed{1,i}(j) = 0;
+% %         end
+% %         if Velocity{1,i}(j,1)<0
+% %             Flood_Speed{1,i}(j) = abs(Velocity{1,i}(j,1));
+% %             Ebb_Speed{1,i}(j) = 0;
+% %         end
+% %         if isnan(Velocity{1,i}(j,1)) == 1 || Velocity{1,i}(j,1) == 0
+% %             Flood_Speed{1,i}(j) = 0;
+% %             Ebb_Speed{1,i}(j) = 0;
+% %         end
+% %         Ebb_Power_D{1,i}(j)=(1/2)*rho(i)*Ebb_Speed{1,i}(j).^3;
+% %         Flood_Power_D{1,i}(j)=(1/2)*rho(i)*Flood_Speed{1,i}(j).^3;
+% %         if Velocity{1,i}(j,1)*Velocity{1,i}(j+1,1)<0
+% %             cycle_indices{i}(l)=j+1; 
+% %             l=l+1;
+% %         end
+% %     end
+% %     for k = 1:2:length(cycle_indices{i})-1
+% %         Ebb_Cycle_Energy{1,i}(k)=trapz(Time_Increment(cycle_indices{i}(k):cycle_indices{i}(k+1)),Ebb_Power_D{1,i}(cycle_indices{i}(k):cycle_indices{i}(k+1)))/4; %[Wh]
+% %     end
+% %     for m= 1:length(Ebb_Cycle_Energy{1,i})-1
+% %         if Ebb_Cycle_Energy{1,i}(m) == 0
+% %             Ebb_Cycle_Energy{1,i}(m)=Ebb_Cycle_Energy{1,i}(m+1);
+% %             Ebb_Cycle_Energy{1,i}(m+1)=0;
+% %         end
+% %     end
+% %     for k=2:2:length(cycle_indices{i})-1
+% %         Flood_Cycle_Energy{1,i}(k)=trapz(Time_Increment(cycle_indices{i}(k):cycle_indices{i}(k+1)-1),Flood_Power_D{1,i}(cycle_indices{i}(k):cycle_indices{i}(k+1)-1))/4; %[Wh]      
+% %     end
+% % end
+% % 
 % % figure(1)
 % % plot(Time_Increment,Speed_Smoothed{5})
 % % plot(maxtab{5}(:,1), maxtab{5}(:,2), 'r*');
@@ -173,11 +210,11 @@ end
 % % 
 % % for i=1:c(2)
 % %     figure(i+1)
-% %     title(strcat('Depth:',num2str(height(i))))
+% %     title(strcat('Depth:',num2str(mean(ADCP_Depth))))
 % %     subplot(3,1,1);
 % %     bin_centers=[1000:1000:16000];
 % %     hist(energy{i},bin_centers);
-% %     title(strcat('Energy per Half Tidal Cycle 1m^2 Turbine at:',num2str(height(i)),'m Above Seafloor'))
+% %     title(strcat('Energy per Half Tidal Cycle 1m^2 Turbine at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
 % %     ylabel('Frequency')
 % %     xlabel('Energy per Cycle[Wh]')
 % %     xmin=0;
@@ -188,16 +225,16 @@ end
 % %     ylim([ymin,ymax])
 % %     
 % %     subplot(3,1,2);
-% %     hist(ebb_energy{i},bin_centers);
-% %     title(strcat('Energy per Ebb Tidal Cycle 1m^2 Turbine at:',num2str(height(i)),'m Above Seafloor'))
+% %     hist(Ebb_Cycle_Energy{i},bin_centers);
+% %     title(strcat('Energy per Ebb Tidal Cycle 1m^2 Turbine at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
 % %     ylabel('Frequency')
 % %     xlabel('Energy per Cycle[Wh]')
 % %     xlim([xmin,xmax])
 % %     ylim([ymin,ymax])
 % %     
 % %     subplot(3,1,3);
-% %     hist(flood_energy{i},bin_centers);
-% %     title(strcat('Energy per Flood Tidal Cycle 1m^2 Turbine at:',num2str(height(i)),'m Above Seafloor'))
+% %     hist(Flood_Cycle_Energy{i},bin_centers);
+% %     title(strcat('Energy per Flood Tidal Cycle 1m^2 Turbine at:',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'))
 % %     ylabel('Frequency')
 % %     xlabel('Energy per Cycle[Wh]')
 % %     xlim([xmin,xmax])
@@ -216,10 +253,10 @@ end
 % %     P = polar(t, 2.5 * ones(size(t)));
 % %     set(P, 'Visible', 'off')
 % %     hold on
-% %     polar(Direction{i},Speed{i},'.b')
+% %     polar(Direction{i}(start_index:end),Speed{i}(start_index:end),'.b')
 % %     set(gca,'color','none')
 % %     view([90 -90])
-% %     title({strcat('Current Speed[m/s] and Direction at Approximately',num2str(height(i)),'m Above Seafloor'),''})
+% %     title({strcat('Current Speed[m/s] and Direction at Approximately',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'),''})
 % %     pause
 % %     close all
 % % end
@@ -227,7 +264,7 @@ end
 % -------------------------------------------------------------------------
 % --Plot Comparing Energy Yeild vs Turbine Size, Efficieny, and Cut-In ----
 % -------------------------------------------------------------------------
-
+% % 
 % % Diameter=4;             %[m]
 % % cut_in=0.4:0.1:1.5;     %[m/s]
 % % Turbine_Length=2;       %[m]
@@ -255,60 +292,64 @@ end
 % --Plot Comparing Energy Yeild vs Turbine Size, Efficieny, and Cut-In ----
 % -------------------------------------------------------------------------
 
-% % Diameter=4;         %[m]
-% % Cp=0.45;
+% % Diameter=3;         %[m]
+% % Cp=0.40;
 % % cut_in=1;           %[m/s]
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
 % % figure(1)
 % % hold on
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'--m')
-% % cut_in=0.9;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'--m')
+% % cut_in=0.7;
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,':m')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,':m')
 % % cut_in=0.5;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'-m')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'-m')
 % % Cp=0.35;
 % % cut_in=1;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'--g')
-% % cut_in=0.9;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'--g')
+% % cut_in=0.7;
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,':g')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,':g')
 % % cut_in=0.5;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'-g')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'-g')
 % % Cp=0.25;
 % % cut_in=1;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'--k')
-% % cut_in=0.9;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'--k')
+% % cut_in=0.7;
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,':k')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,':k')
 % % cut_in=0.5;
-% % for Turbine_Length=2:5
-% %     [ Thirty_Day_Energy(Turbine_Length-1) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
+% % for Turbine_Length=1:5
+% %     [ Thirty_Day_Energy(Turbine_Length) ] = onemonthE( Speed,bin_space,Time_Increment,Turbine_Length,Diameter,Cp,cut_in );
 % % end
-% % plot((Diameter*(2:5)),Thirty_Day_Energy,'-k')
+% % plot((Diameter*(1:5)),Thirty_Day_Energy,'-k')
+% % 
+% % Thirty_Day_Energy = onemonthE( Speed,bin_space,Time_Increment,1.75,3,.35,.5 );
+% % plot((1.75*3),Thirty_Day_Energy,'b*')
+% % 
 % % xlabel('Turbine Swept Area[m^2]')
-% % ylabel('Energy Produced in 30 Days[Wh]')
-% % legend('Cp=0.45, Cut In=1m/s','Cp=0.45, Cut In=0.9m/s','Cp=0.45, Cut In=0.5m/s','Cp=0.35, Cut In=1m/s','Cp=0.35, Cut In=0.9m/s','Cp=0.35, Cut In=0.5m/s','Cp=0.25, Cut In=1m/s','Cp=0.25, Cut In=0.9m/s','Cp=0.25, Cut In=0.5m/s','Location','NorthWest')
+% % ylabel('Energy Converted in 30 Days[Wh]')
+% % legend('Cp=0.40, Cut In=1m/s','Cp=0.40, Cut In=0.7m/s','Cp=0.40, Cut In=0.5m/s','Cp=0.35, Cut In=1m/s','Cp=0.35, Cut In=0.7m/s','Cp=0.35, Cut In=0.5m/s','Cp=0.25, Cut In=1m/s','Cp=0.25, Cut In=0.7m/s','Cp=0.25, Cut In=0.5m/s','Location','NorthWest')
 
 
 % -------------------------------------------------------------------------
@@ -350,26 +391,56 @@ end
 % -------------------------------------------------------------------------
 % ------------------  Depth vs Speed vs Time  -----------------------------
 % -------------------------------------------------------------------------
-for i = 1:length(Bin_Height)
-    Bin_Heights(i) = Bin_Height{1,i}(1,1);
-end
-for i = 1:c(2)
-    for j = start_index:c(1)
-        Speeds(i,(j-start_index)+1)=Speed{1,i}(j,1);
-    end
-end
 
-[time,depth]=meshgrid(Time_Increment_Days(start_index:end),Bin_Heights);
+% % for i = 1:length(Bin_Height)
+% %     Bin_Heights(i) = Bin_Height{1,i}(1,1);
+% % end
+% % for i = 1:c(2)
+% %     for j = start_index:c(1)
+% %         Speeds(i,(j-start_index)+1)=Speed{1,i}(j,1);
+% %     end
+% % end
+% % 
+% % [time,depth]=meshgrid(Time_Increment_Days(start_index:end),Bin_Heights);
+% % 
+% % hFig = figure(1);
+% % set(hFig, 'Position', [100 100 1000 200 ])
+% % pcolor(time,depth,Speeds)
+% % shading interp
+% % hold on
+% % plot(Time_Increment_Days(start_index:end),ADCP_Depth(start_index:end))
+% % color = colorbar;
+% % color.Label.String = 'Speed[m/s]';
+% % ylim([0,20])
+% % xlabel('Time[days]')
+% % ylabel('Depth[m]')
+% % 
+% % for i = 1:length(Bin_Height)
+% %     Bin_Heights(i) = Bin_Height{1,i}(1,1);
+% % end
+% % clear Speeds
+% % for i = 1:c(2)
+% %     for j = 6240:7200
+% %         Speeds(i,(j-6240)+1)=Speed{1,i}(j,1);
+% %     end
+% % end
+% % 
+% % [time,depth]=meshgrid(Time_Increment_Days(6240:7200),Bin_Heights);
+% % 
+% % hFig = figure(2);
+% % set(hFig, 'Position', [100 100 1000 200 ])
+% % pcolor(time,depth,Speeds)
+% % shading interp
+% % hold on
+% % plot(Time_Increment_Days(6240:7200),ADCP_Depth(6240:7200))
+% % color = colorbar;
+% % color.Label.String = 'Speed[m/s]';
+% % ylim([0,20])
+% % xlabel('Time[days]')
+% % ylabel('Depth[m]')
 
-pcolor(time,depth,Speeds)
-shading interp
-hold on
-plot(Time_Increment_Days(start_index:end),ADCP_Depth(start_index:end))
-ylim([0,20])
-xlabel('Time[days]')
-ylabel('Depth[m]')
 % -------------------------------------------------------------------------
-% --------       Calculate Energy Density in Top Bins         -----------
+% --------       Calculate Energy Density in Top Bins         -------------
 % -------------------------------------------------------------------------
 
 % % for bins=5:50   %range over the top 1.75m where the turbine will be
@@ -377,97 +448,92 @@ ylabel('Depth[m]')
 % % end
 % % 
 % % plot(1:50,binE)
-% % % ylim([500000,600000])
+% % ylim([500000,600000])
 
 % -------------------------------------------------------------------------
-% --------  Theoretical Energy Production and Consumption Plot 2 -----------
+% --------       Calculate MKPD, MKPA, Maximum Speed         --------------
 % -------------------------------------------------------------------------
-% A=[4.5,6.75,9];                                    %[m^2]
-% Battery_Capacity=20000:20000:100000;                   %[Wh]
-% A=7;                                    %[m^2]
-% Battery_Capacity=100000;                   %[Wh]
-% start_index=5473;
-% Energy_Consumption_Per_Month=900000;    %[Wh]
-% Power_Consumption=Energy_Consumption_Per_Month/(24*30); %[W]
-% Power_Consumption_Vector=Power_Consumption*ones(1,length(Power_lim{10}(start_index:end))); %[W] check this
-% Energy_Consumption_Vector=Power_Consumption_Vector/4; %[Wh]
-% Power_Production_Vector=A*Power_lim{10}(start_index:end); %[W]
-% Energy_Production_Vector=Power_Production_Vector/4; %[Wh]
-% Total_Energy_Production=sum(Energy_Production_Vector);
-% Total_Energy_Production_Check=trapz(Time_Increment(start_index:end),Power_Production_Vector)/60;
-% Total_Energy_Consumption=sum(Energy_Consumption_Vector);
-% Total_Energy_Consumption_Check=trapz(Time_Increment(start_index:end),Power_Consumption_Vector)/60;
-% figure
-% subplot(2,1,1)
-% plot(Time_Increment_Days(start_index:end),Power_Production_Vector)
-% hold on
-% plot(Time_Increment_Days(start_index:end),Power_Consumption_Vector,'r')
-% title('Power Production and Consumption')
-% xlabel('Time[Days]')
-% ylabel('Power[W]')
-% legend('Power Production','Power Consumption')
-% j=1;
-% k=1;
-% l=1;
-% for i=2:length(Power_lim{10}(start_index:end))-1
-%     Battery_Level(1)=Battery_Capacity/2;%Start the battery at half a charge
-%     %The battery level at each index is equal to whatever the previous
-%     %indexes state of the battery was minus the amount of energy consumed
-%     %and plus the amount of energy converted
-%     Battery_Level(i)=Battery_Level(i-1)+(-Energy_Consumption_Vector(i)+Energy_Production_Vector(i));
-%     %If the battery is neither empty or over full no energy is drawn from
-%     %the grid or dumped.
-%     if Battery_Level(i)<Battery_Capacity && Battery_Level(i-1)>0
-%         E_under(i)=0;
-%         E_over(i)=0;
-%         Middle_indeces(l)=i;
-%         l=l+1;
-%     end
-%     %If the battery level goes above the batteries full capacity the amount
-%     %of energy overproduced will be whatever the battery level is minus the
-%     %full capacity of the battery such that the battery's charge level stays
-%     %at its full capacity
-%     if Battery_Level(i)>=Battery_Capacity;
-%         E_over(i)=Battery_Level(i)-Battery_Capacity;
-%         Battery_Level(i)=Battery_Capacity;
-%         E_under(i)=0;
-%         Over_indeces(j)=i;
-%         j=j+1;
-%     end
-%     %If the battery gets empty the automatic switch switches the bridge to
-%     %grid power, whatever the energy demand is is pulled from the grid, and
-%     %whatever the turbine converts goes into charging the battery.
-%     if Battery_Level(i)<=0;
-%         E_under(i)=Energy_Consumption_Vector(i);
-%         Battery_Level(i)=Energy_Production_Vector(i);
-%         E_over(i)=0;
-%         Under_indeces(k)=i;
-%         k=k+1;
-%     end
-% end
-% 
-% for i=1:2:length(Over_indeces)-1%index every other such that each space is only integrated once
-%     Dump(i)=trapz(Time_Increment(Over_indeces(i):Over_indeces(i+1)),...
-%         (A*Power_lim{10}(start_index+Over_indeces(i):start_index+Over_indeces(i+1))/60));%/60 because Time_Increments is in minutes
-% end
-% Dumped_Energy=sum(Dump);
-% for i=1:2:length(Under_indeces)-1
-%     Grid(i)=trapz(Time_Increment(Under_indeces(i):Under_indeces(i+1)),...
-%         (Power_Consumption_Vector(Under_indeces(i):Under_indeces(i+1))/60));
-% end
-% Grid_Energy=sum(Grid);
-% for i=1:2:length(Middle_indeces)-1
-%     Converted(i)=trapz(Time_Increment(Middle_indeces(i):Middle_indeces(i+1)),...
-%         (A*Power_lim{10}(start_index+Middle_indeces(i):start_index+Middle_indeces(i+1))/60));
-% end
-% Converted_Energy=sum(Converted);
-% 
-% subplot(2,1,2)
-% plot(Time_Increment_Days(start_index+1:end),Battery_Level)
-% hold on
-% % plot(Time_Increment_Days(start_index+1:end),E_over,'g')
-% % plot(Time_Increment_Days(start_index+1:end),E_under,'r')
-% title('Battery Level')
-% xlabel('Time[Days]')
-% ylabel('Battery Level[Wh]')
-% legend('Battery Level','Dumped Energy','Grid Energy')
+
+% % Bin_Rep=6;                                  %Bin{6} was chosen as a representative bin height it is approximately 12m off the seabed. It's also the highest bin that we always have reasonable data for.
+% % MKPD = nanmean(0.5*rho(Bin_Rep)*Speed{1,Bin_Rep}(start_index:end,1).^3) %[w/m^2]
+% % for i = 1:length(Velocity{1,Bin_Rep}(:,1))
+% %     if Velocity{1,Bin_Rep}(i,1)>0
+% %         Ebb_Speed(i) = abs(Velocity{1,Bin_Rep}(i,1));
+% %         Flood_Speed(i) = NaN;
+% %     end
+% %     if Velocity{1,Bin_Rep}(i,1)<0
+% %         Flood_Speed(i) = abs(Velocity{1,Bin_Rep}(i,1));
+% %         Ebb_Speed(i) = NaN;
+% %     end
+% % end
+% %         
+% % MKPD_Ebb = nanmean(0.5*rho(Bin_Rep)*Ebb_Speed(1,start_index:end).^3);
+% % MKPD_Flood = nanmean(0.5*rho(Bin_Rep)*Flood_Speed(1,start_index:end).^3);
+% % MKPDA = MKPD_Ebb/MKPD_Flood
+% % Max_Speed = max(abs(Velocity{1,Bin_Rep}(start_index:end,1)))
+
+% -------------------------------------------------------------------------
+% --------               Direction Analysis                  --------------
+% -------------------------------------------------------------------------
+
+% % for i = 5:c(2)
+% %     k=1;
+% %     l=1;
+% %     for j = 1:length(Direction_deg{i})
+% %         if Direction_deg{i}(j) > 180
+% %             Flood_Direction{i}(k) = Direction_deg{i}(j);
+% %             k=k+1;
+% %         end
+% %         if Direction_deg{i}(j)<180
+% %             Ebb_Direction{i}(l) = Direction_deg{i}(j);
+% %             l=l+1;
+% %         end
+% %     end
+% %     avg_flood_dir_el(i)=mean(Flood_Direction{i});
+% % 
+% %     avg_ebb_dir_el(i)=mean(Ebb_Direction{i});
+% % 
+% % end
+% % avg_ebb_dir=mean(avg_ebb_dir_el(5:end));
+% % avg_flood_dir=mean(avg_flood_dir_el(5:end));
+% % 
+% % Direction_Asymmetry=(avg_flood_dir-180)-avg_ebb_dir;
+
+
+% -------------------------------------------------------------------------
+% --------                Pier AoA Analysis                  --------------
+% -------------------------------------------------------------------------
+
+%Bridge pier is aligned 105.05 degrees south of north. Determined using
+%bridge as built drawings.
+
+Bridge_Angle=105.05;
+
+for i = 5:c(2)
+    for j = 1:length(Direction_deg{i})
+        if Speed{i}(j)<0.5
+            Direction_deg{i}(j)=NaN;
+        end
+        if Direction_deg{i}(j) > 180
+            AoA{i}(j) = (Direction_deg{i}(j)-180)-Bridge_Angle;
+        end
+        if Direction_deg{i}(j)<180
+            AoA{i}(j) = Direction_deg{i}(j)-Bridge_Angle;
+        end
+    end
+    plot(Time_Increment_Days(start_index:length(AoA{i})),AoA{i}(start_index:end))%Time_Increment_Days is incremented weird because AoA ends in a few NaNs
+    title({strcat('Bridge Pier AoA at Approximately',num2str(Bin_Height{1,i}(1,1)),'m Above Seafloor'),''})
+    xlabel('Time[days]')
+    ylabel('AoA[deg]')
+    pause
+    close all
+end
+
+%For thin airfoils and small angles of attack Cl=2*pi*AoA (AoA in radians) https://www.grc.nasa.gov/www/k-12/airplane/incline.html
+Planform_A=(80.74*75)*0.092903;%[m^2]underwater bridge pier planform area dimensions taken from bridge drawings converted to m^2
+Cl=2*pi*deg2rad(AoA{6});
+Lift=(1/2)*mean(rho)*Planform_A*Cl'.*Speed{6}(1:length(Cl)).^2;
+plot(Time_Increment_Days(start_index:length(Lift)),Lift(start_index:end))%Time_Increment_Days is incremented weird because AoA ends in a few NaNs
+title({strcat('Bridge Pier Lift Force'),''})
+xlabel('Time[days]')
+ylabel('Lift Force[N]')
